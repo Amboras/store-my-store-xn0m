@@ -15,6 +15,7 @@ import {
   Clock,
   BarChart3,
   ArrowRight,
+  MapPin,
 } from 'lucide-react'
 import GeocodeDemo from '@/components/geocode/geocode-demo'
 import { ProductViewTracker } from '@/components/product/product-view-tracker'
@@ -84,11 +85,11 @@ export async function generateMetadata({
   if (!product) return { title: 'Plan introuvable' }
 
   return {
-    title: `${product.title} — GeoData API`,
-    description: product.description || `Abonnement ${product.title} — API de géocodage`,
+    title: `${product.title} — GeoData.ma`,
+    description: product.description || `Abonnement ${product.title} — API de géocodage Maroc`,
     openGraph: {
       title: product.title,
-      description: product.description || `Abonnement ${product.title}`,
+      description: product.description || `Abonnement ${product.title} — GeoData.ma`,
     },
   }
 }
@@ -109,7 +110,9 @@ const PLAN_FEATURES: Record<string, string[]> = {
   starter: [
     '2 500 geocoding / mois',
     'Lat / Lng + adresse formatée',
-    'Timezone & County FIPS',
+    'Wilaya & Province/Préfecture',
+    'Code Commune (HCP)',
+    'Fuseau horaire Africa/Casablanca',
     '1 requête batch CSV / jour',
     'Reverse geocoding inclus',
     'Support e-mail (48h)',
@@ -118,11 +121,15 @@ const PLAN_FEATURES: Record<string, string[]> = {
   ],
   business: [
     'Lookups illimités par mois',
-    'Tous les append fields activés',
-    'Congressional district + Census tract',
+    'Tous les 16 champs append activés',
+    'Wilaya + Code Wilaya + Commune',
+    'Arrondissement + Code Commune',
+    'Zone CIN (par wilaya)',
+    'Circonscription Électorale',
+    'Tribunal Compétent',
+    'Académie Régionale',
     'Batch CSV illimité',
     'Webhooks & callbacks',
-    'IP dédiée disponible',
     'Support prioritaire (4h)',
     'SLA 99.9% garanti',
     'Dashboard analytics avancé',
@@ -130,12 +137,13 @@ const PLAN_FEATURES: Record<string, string[]> = {
   ],
   enterprise: [
     'Volume sur-mesure',
-    'Tous les champs append',
+    'Tous les champs append Maroc',
     'Intégration sur-mesure',
+    'Accès aux données HCP brutes',
     'Account manager dédié',
     'Contrat SLA personnalisé',
     'Formation & onboarding',
-    'Facturation mensuelle',
+    'Facturation mensuelle MAD',
     'Support téléphonique 24/7',
   ],
 }
@@ -174,7 +182,7 @@ export default async function ProductPage({
         productId={product.id}
         productTitle={product.title}
         variantId={firstVariant?.id || null}
-        currency={price?.currency_code || 'usd'}
+        currency={price?.currency_code || 'mad'}
         value={price?.calculated_amount ?? null}
       />
 
@@ -191,15 +199,15 @@ export default async function ProductPage({
         </div>
       </div>
 
-      {/* ── Hero plan header ── */}
-      <section className="bg-gradient-to-b from-slate-950 via-blue-950 to-slate-900 text-white">
+      {/* ── Hero plan ── */}
+      <section className="bg-gradient-to-b from-slate-950 via-red-950/20 to-slate-900 text-white">
         <div className="container-custom py-16 lg:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: plan info */}
+            {/* Left */}
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 text-blue-300 text-xs font-semibold uppercase tracking-widest">
-                <Zap className="h-3 w-3" />
-                {product.subtitle || 'API Subscription Plan'}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-400/30 bg-red-500/10 text-red-300 text-xs font-semibold uppercase tracking-widest">
+                <span>🇲🇦</span>
+                {product.subtitle || 'API Géocodage Maroc'}
               </div>
 
               <h1 className="text-4xl lg:text-5xl font-heading font-bold text-balance">
@@ -212,7 +220,6 @@ export default async function ProductPage({
                 </p>
               )}
 
-              {/* Price display */}
               {priceFormatted && (
                 <div className="flex items-end gap-2">
                   <span className="text-5xl font-bold font-heading text-white">{priceFormatted}</span>
@@ -220,19 +227,15 @@ export default async function ProductPage({
                 </div>
               )}
 
-              {/* CTA */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <ProductActions product={product} variantExtensions={variantExtensions} />
-                </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <ProductActions product={product} variantExtensions={variantExtensions} />
               </div>
 
-              {/* Trust */}
               <div className="flex flex-wrap gap-5 text-sm text-slate-400 pt-2">
                 {[
-                  { icon: <Shield className="h-4 w-4 text-blue-400" />, label: 'SLA 99.9%' },
-                  { icon: <Clock className="h-4 w-4 text-blue-400" />, label: 'Latence < 50ms' },
-                  { icon: <Globe className="h-4 w-4 text-blue-400" />, label: '50+ pays' },
+                  { icon: <Shield className="h-4 w-4 text-red-400" />, label: 'SLA 99.9%' },
+                  { icon: <Clock className="h-4 w-4 text-red-400" />, label: 'Latence < 50ms' },
+                  { icon: <MapPin className="h-4 w-4 text-red-400" />, label: '1 538 communes' },
                 ].map(({ icon, label }) => (
                   <span key={label} className="flex items-center gap-1.5">
                     {icon} {label}
@@ -241,14 +244,14 @@ export default async function ProductPage({
               </div>
             </div>
 
-            {/* Right: feature list */}
+            {/* Right: features */}
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-3">
               <p className="text-sm font-semibold text-slate-300 uppercase tracking-widest mb-4">
                 Inclus dans ce plan
               </p>
               {features.map((f) => (
                 <div key={f} className="flex items-center gap-3 text-sm text-slate-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-red-400 shrink-0" />
                   {f}
                 </div>
               ))}
@@ -257,20 +260,20 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ── LIVE GEOCODE DEMO ── */}
+      {/* ── DEMO GÉOCODAGE MAROC ── */}
       <section className="py-16 lg:py-24 bg-slate-50">
         <div className="container-custom">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-widest mb-4">
               <Zap className="h-3 w-3" />
-              Demo interactive
+              Démo Interactive
             </div>
             <h2 className="text-3xl lg:text-4xl font-heading font-bold text-slate-900">
-              Testez l&apos;algorithme de géocodage
+              Testez le géocodage d&apos;adresses marocaines 🇲🇦
             </h2>
             <p className="text-slate-500 mt-3 max-w-xl mx-auto">
-              Entrez n&apos;importe quelle adresse et voyez exactement ce que l&apos;API retourne —
-              coordonnées GPS, composants d&apos;adresse, et tous les champs append.
+              Entrez n&apos;importe quelle adresse marocaine et voyez exactement ce que l&apos;API retourne —
+              coordonnées, wilaya, commune, zone CIN, circonscription électorale et plus.
             </p>
           </div>
 
@@ -280,40 +283,40 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ── How it works ── */}
+      {/* ── Algorithme Maroc ── */}
       <section className="py-16 lg:py-20 bg-white">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold uppercase tracking-widest text-blue-600 mb-3">Algorithme</p>
+            <p className="text-sm font-semibold uppercase tracking-widest text-red-600 mb-3">Algorithme</p>
             <h2 className="text-3xl font-heading font-bold text-slate-900">
-              Comment fonctionne le géocodage ?
+              Comment fonctionne le géocodage pour le Maroc ?
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 step: '01',
-                icon: <Code2 className="h-6 w-6 text-blue-600" />,
+                icon: <Code2 className="h-6 w-6 text-red-600" />,
                 title: 'Parsing de l\'adresse',
-                desc: 'Décomposition de l\'adresse en composants (numéro, rue, ville, état, zip) via NLP.',
+                desc: 'Décomposition en composants (numéro, rue, quartier, ville, wilaya, code postal) avec normalisation Arabic/Latin.',
               },
               {
                 step: '02',
-                icon: <Database className="h-6 w-6 text-violet-600" />,
-                title: 'Matching dans la base',
-                desc: 'Correspondance avec la base TIGER/Line® du Census Bureau et OpenStreetMap.',
+                icon: <Database className="h-6 w-6 text-green-600" />,
+                title: 'Matching HCP + OSM',
+                desc: 'Correspondance avec la Base Nationale des Adresses du HCP et la couche OpenStreetMap Maroc.',
               },
               {
                 step: '03',
-                icon: <Globe className="h-6 w-6 text-emerald-600" />,
+                icon: <Globe className="h-6 w-6 text-red-400" />,
                 title: 'Score de précision',
-                desc: 'Score de 0 à 1 selon la granularité : rooftop, street, city, zip.',
+                desc: 'Score 0 à 1 selon la granularité : rooftop, interpolation, place, commune, wilaya.',
               },
               {
                 step: '04',
-                icon: <BarChart3 className="h-6 w-6 text-orange-600" />,
-                title: 'Enrichissement',
-                desc: 'Ajout des champs append : district, census tract, timezone, FIPS…',
+                icon: <BarChart3 className="h-6 w-6 text-green-500" />,
+                title: 'Enrichissement 🇲🇦',
+                desc: 'Ajout automatique : wilaya, code commune, zone CIN, circonscription, tribunal, académie régionale.',
               },
             ].map((s) => (
               <div key={s.step} className="relative p-6 rounded-2xl border border-slate-100 bg-slate-50">
@@ -331,7 +334,7 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ── Accuracy types ── */}
+      {/* ── Types de précision ── */}
       <section className="py-16 bg-slate-50 border-t border-slate-100">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto">
@@ -340,12 +343,12 @@ export default async function ProductPage({
             </h2>
             <div className="space-y-3">
               {[
-                { type: 'rooftop', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', score: '1.0', desc: 'Coordonnées exactes du bâtiment — précision maximale.' },
-                { type: 'street_center', color: 'bg-blue-100 text-blue-700 border-blue-200', score: '0.9', desc: 'Centre du tronçon de rue correspondant.' },
-                { type: 'range_interpolation', color: 'bg-violet-100 text-violet-700 border-violet-200', score: '0.8', desc: 'Interpolation entre deux numéros de rue connus.' },
-                { type: 'place', color: 'bg-amber-100 text-amber-700 border-amber-200', score: '0.7', desc: 'Centre de la ville ou zone nommée.' },
-                { type: 'zip_code', color: 'bg-orange-100 text-orange-700 border-orange-200', score: '0.5', desc: 'Centre géographique du code postal.' },
-                { type: 'state', color: 'bg-red-100 text-red-700 border-red-200', score: '0.2', desc: 'Centroïde de l\'état — faible précision.' },
+                { type: 'rooftop', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', score: '1.0', desc: 'Coordonnées exactes du bâtiment — précision maximale (grandes villes, Casablanca, Rabat).' },
+                { type: 'street_center', color: 'bg-blue-100 text-blue-700 border-blue-200', score: '0.9', desc: 'Centre du tronçon de rue correspondant dans la base OSM Maroc.' },
+                { type: 'range_interpolation', color: 'bg-violet-100 text-violet-700 border-violet-200', score: '0.8', desc: 'Interpolation entre deux numéros connus — zones résidentielles numérotées.' },
+                { type: 'place', color: 'bg-amber-100 text-amber-700 border-amber-200', score: '0.75', desc: 'Centre de la ville ou du quartier nommé — médinas, douars.' },
+                { type: 'commune', color: 'bg-orange-100 text-orange-700 border-orange-200', score: '0.6', desc: 'Centroïde de la commune (code commune HCP).' },
+                { type: 'wilaya', color: 'bg-red-100 text-red-700 border-red-200', score: '0.3', desc: 'Centroïde de la wilaya — faible précision, niveau administratif.' },
               ].map((a) => (
                 <div key={a.type} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200">
                   <span className={`px-2.5 py-1 rounded-full border text-xs font-bold whitespace-nowrap ${a.color}`}>
@@ -363,18 +366,19 @@ export default async function ProductPage({
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-16 bg-blue-600 text-white text-center">
+      <section className="py-16 bg-red-600 text-white text-center">
         <div className="container-custom max-w-xl">
+          <div className="text-4xl mb-3">🇲🇦</div>
           <h2 className="text-3xl font-heading font-bold mb-4">
             Prêt à intégrer l&apos;API ?
           </h2>
-          <p className="text-blue-100 mb-8">
+          <p className="text-red-100 mb-8">
             Commencez avec 2 500 lookups gratuits. Aucune carte bancaire requise.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/auth/register"
-              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors"
+              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors"
             >
               Créer un compte gratuit
               <ArrowRight className="h-4 w-4" />

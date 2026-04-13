@@ -21,193 +21,516 @@ interface GeocodeLocation {
   lng: number
 }
 
-interface GeocodeFields {
+interface GeocodeFieldsMA {
   timezone?: string
-  congressional_district?: string
-  census_tract?: string
-  county_fips?: string
-  state_legislature_upper?: string
-  state_legislature_lower?: string
-  school_district?: string
-  msa?: string
-  zip4?: string
-  accuracy_type?: string
+  wilaya?: string
+  code_wilaya?: string
+  province_prefecture?: string
+  commune?: string
+  code_commune?: string
+  arrondissement?: string
+  circonscription_electorale?: string
+  region_administrative?: string
+  code_region?: string
+  code_postal?: string
+  secteur_postal?: string
+  cin_zone?: string
+  tribunal_competent?: string
+  academie_regionale?: string
+  centre_sante?: string
   source?: string
+  accuracy_type?: string
 }
 
-interface GeocodeResult {
-  number?: string
-  predirectional?: string
-  street?: string
-  suffix?: string
-  city?: string
-  county?: string
-  state?: string
-  zip?: string
-  country?: string
+interface GeocodeResultMA {
+  numero?: string
+  rue?: string
+  quartier?: string
+  ville?: string
+  commune?: string
+  wilaya?: string
+  code_postal?: string
+  pays?: string
   formatted_address: string
   location: GeocodeLocation
   accuracy: number
   accuracy_type: string
   source: string
-  fields?: GeocodeFields
+  fields?: GeocodeFieldsMA
 }
 
-interface GeocodeResponse {
+interface GeocodeResponseMA {
   input: {
     address_components: {
-      number?: string
-      street?: string
-      city?: string
-      state?: string
-      zip?: string
-      country?: string
+      numero?: string
+      rue?: string
+      ville?: string
+      wilaya?: string
+      code_postal?: string
+      pays?: string
     }
     formatted_address: string
   }
-  results: GeocodeResult[]
+  results: GeocodeResultMA[]
 }
 
-// ─── Mock Geocodio-style geocoder ─────────────────────────────────────────────
+// ─── Base de données villes marocaines ────────────────────────────────────────
 
-function mockGeocode(address: string): GeocodeResponse {
-  // Parse the address very simply for demo purposes
-  const trimmed = address.trim()
-  const lower = trimmed.toLowerCase()
-
-  // Some preset results for realistic demo
-  const presets: Record<string, GeocodeResponse> = {
-    default: {
-      input: {
-        address_components: {
-          number: '1600',
-          street: 'Pennsylvania Ave NW',
-          city: 'Washington',
-          state: 'DC',
-          zip: '20500',
-          country: 'US',
-        },
-        formatted_address: trimmed,
+const MA_DB: Record<string, GeocodeResponseMA> = {
+  casablanca: {
+    input: { address_components: { ville: 'Casablanca', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Casablanca',
+      commune: 'Ain Chock',
+      wilaya: 'Casablanca-Settat',
+      code_postal: '20000',
+      pays: 'MA',
+      formatted_address: 'Casablanca, 20000, Maroc',
+      location: { lat: 33.5731, lng: -7.5898 },
+      accuracy: 0.88,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Casablanca-Settat',
+        code_wilaya: '20',
+        province_prefecture: 'Préfecture de Casablanca',
+        commune: 'Casablanca (Ain Chock)',
+        code_commune: '201101',
+        arrondissement: 'Ain Chock',
+        region_administrative: 'Casablanca-Settat',
+        code_region: 'CAS',
+        code_postal: '20000',
+        secteur_postal: 'Casablanca Centre',
+        cin_zone: 'BE / BH',
+        circonscription_electorale: 'Casablanca-Anfa',
+        tribunal_competent: 'Tribunal de Commerce de Casablanca',
+        academie_regionale: 'Académie Régionale Casablanca-Settat',
+        centre_sante: 'CHU Ibn Rochd',
+        source: 'HCP / Base Nationale des Adresses',
       },
-      results: [
-        {
-          number: '1600',
-          predirectional: '',
-          street: 'Pennsylvania Ave NW',
-          suffix: '',
-          city: 'Washington',
-          county: 'District of Columbia',
-          state: 'DC',
-          zip: '20500',
-          country: 'US',
-          formatted_address: trimmed || '1600 Pennsylvania Ave NW, Washington, DC 20500',
-          location: { lat: 38.8977, lng: -77.0365 },
-          accuracy: 1,
-          accuracy_type: 'rooftop',
-          source: 'TIGER/Line® dataset from the US Census Bureau',
-          fields: {
-            timezone: 'America/New_York',
-            congressional_district: 'DC-00 (At-Large)',
-            census_tract: '11001006202.00',
-            county_fips: '11001',
-            state_legislature_upper: 'District of Columbia',
-            state_legislature_lower: 'District of Columbia',
-            school_district: 'District of Columbia Public Schools',
-            msa: 'Washington-Arlington-Alexandria, DC-VA-MD-WV',
-            zip4: '0005',
-            accuracy_type: 'rooftop',
-            source: 'TIGER/Line®',
-          },
-        },
-      ],
+    }],
+  },
+
+  rabat: {
+    input: { address_components: { ville: 'Rabat', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Rabat',
+      commune: 'Rabat',
+      wilaya: 'Rabat-Salé-Kénitra',
+      code_postal: '10000',
+      pays: 'MA',
+      formatted_address: 'Rabat, 10000, Maroc',
+      location: { lat: 34.0209, lng: -6.8416 },
+      accuracy: 0.92,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Rabat-Salé-Kénitra',
+        code_wilaya: '10',
+        province_prefecture: 'Préfecture de Rabat',
+        commune: 'Rabat',
+        code_commune: '101101',
+        arrondissement: 'Hassan',
+        region_administrative: 'Rabat-Salé-Kénitra',
+        code_region: 'RSK',
+        code_postal: '10000',
+        secteur_postal: 'Rabat Centre',
+        cin_zone: 'A / AA',
+        circonscription_electorale: 'Rabat-Hassan',
+        tribunal_competent: 'Tribunal Administratif de Rabat',
+        academie_regionale: 'Académie Régionale Rabat-Salé-Kénitra',
+        centre_sante: 'CHU Ibn Sina',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  marrakech: {
+    input: { address_components: { ville: 'Marrakech', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Marrakech',
+      commune: 'Marrakech',
+      wilaya: 'Marrakech-Safi',
+      code_postal: '40000',
+      pays: 'MA',
+      formatted_address: 'Marrakech, 40000, Maroc',
+      location: { lat: 31.6295, lng: -7.9811 },
+      accuracy: 0.90,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Marrakech-Safi',
+        code_wilaya: '40',
+        province_prefecture: 'Préfecture de Marrakech',
+        commune: 'Marrakech (Médina)',
+        code_commune: '401101',
+        arrondissement: 'Médina',
+        region_administrative: 'Marrakech-Safi',
+        code_region: 'MRS',
+        code_postal: '40000',
+        secteur_postal: 'Marrakech Médina',
+        cin_zone: 'H / HH',
+        circonscription_electorale: 'Marrakech-Médina',
+        tribunal_competent: 'Tribunal de Première Instance de Marrakech',
+        academie_regionale: 'Académie Régionale Marrakech-Safi',
+        centre_sante: 'CHU Mohammed VI Marrakech',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  fes: {
+    input: { address_components: { ville: 'Fès', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Fès',
+      commune: 'Fès',
+      wilaya: 'Fès-Meknès',
+      code_postal: '30000',
+      pays: 'MA',
+      formatted_address: 'Fès, 30000, Maroc',
+      location: { lat: 34.0181, lng: -5.0078 },
+      accuracy: 0.91,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Fès-Meknès',
+        code_wilaya: '30',
+        province_prefecture: 'Préfecture de Fès',
+        commune: 'Fès (Médina)',
+        code_commune: '301101',
+        arrondissement: 'Fès-Médina',
+        region_administrative: 'Fès-Meknès',
+        code_region: 'FM',
+        code_postal: '30000',
+        secteur_postal: 'Fès Médina',
+        cin_zone: 'D / G',
+        circonscription_electorale: 'Fès-Médina',
+        tribunal_competent: 'Tribunal de Première Instance de Fès',
+        academie_regionale: 'Académie Régionale Fès-Meknès',
+        centre_sante: 'CHU Hassan II Fès',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  tanger: {
+    input: { address_components: { ville: 'Tanger', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Tanger',
+      commune: 'Tanger',
+      wilaya: 'Tanger-Tétouan-Al Hoceïma',
+      code_postal: '90000',
+      pays: 'MA',
+      formatted_address: 'Tanger, 90000, Maroc',
+      location: { lat: 35.7595, lng: -5.834 },
+      accuracy: 0.91,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Tanger-Tétouan-Al Hoceïma',
+        code_wilaya: '90',
+        province_prefecture: 'Préfecture de Tanger-Assilah',
+        commune: 'Tanger',
+        code_commune: '901101',
+        arrondissement: 'Charf-Souani',
+        region_administrative: 'Tanger-Tétouan-Al Hoceïma',
+        code_region: 'TTA',
+        code_postal: '90000',
+        secteur_postal: 'Tanger Centre',
+        cin_zone: 'TK / T',
+        circonscription_electorale: 'Tanger-Assilah',
+        tribunal_competent: 'Tribunal de Commerce de Tanger',
+        academie_regionale: 'Académie Régionale Tanger-Tétouan-Al Hoceïma',
+        centre_sante: 'Hôpital Mohammed V Tanger',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  agadir: {
+    input: { address_components: { ville: 'Agadir', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Agadir',
+      commune: 'Agadir',
+      wilaya: 'Souss-Massa',
+      code_postal: '80000',
+      pays: 'MA',
+      formatted_address: 'Agadir, 80000, Maroc',
+      location: { lat: 30.4278, lng: -9.5981 },
+      accuracy: 0.90,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Souss-Massa',
+        code_wilaya: '80',
+        province_prefecture: 'Préfecture d\'Agadir-Ida Ou Tanane',
+        commune: 'Agadir',
+        code_commune: '801101',
+        arrondissement: 'Agadir (Talborjt)',
+        region_administrative: 'Souss-Massa',
+        code_region: 'SM',
+        code_postal: '80000',
+        secteur_postal: 'Agadir Centre',
+        cin_zone: 'JH / JK',
+        circonscription_electorale: 'Agadir Ida Ou Tanane',
+        tribunal_competent: 'Tribunal de Commerce d\'Agadir',
+        academie_regionale: 'Académie Régionale Souss-Massa',
+        centre_sante: 'CHU Souss-Massa Agadir',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  meknes: {
+    input: { address_components: { ville: 'Meknès', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Meknès',
+      commune: 'Meknès',
+      wilaya: 'Fès-Meknès',
+      code_postal: '50000',
+      pays: 'MA',
+      formatted_address: 'Meknès, 50000, Maroc',
+      location: { lat: 33.8935, lng: -5.5473 },
+      accuracy: 0.89,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Fès-Meknès',
+        code_wilaya: '50',
+        province_prefecture: 'Préfecture de Meknès',
+        commune: 'Meknès',
+        code_commune: '501101',
+        arrondissement: 'Meknès-Médina',
+        region_administrative: 'Fès-Meknès',
+        code_region: 'FM',
+        code_postal: '50000',
+        secteur_postal: 'Meknès Centre',
+        cin_zone: 'EE / EF',
+        circonscription_electorale: 'Meknès-Centre',
+        tribunal_competent: 'Tribunal de Première Instance de Meknès',
+        academie_regionale: 'Académie Régionale Fès-Meknès',
+        centre_sante: 'CHU Moulay Ismail Meknès',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  oujda: {
+    input: { address_components: { ville: 'Oujda', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Oujda',
+      commune: 'Oujda',
+      wilaya: 'Oriental',
+      code_postal: '60000',
+      pays: 'MA',
+      formatted_address: 'Oujda, 60000, Maroc',
+      location: { lat: 34.6867, lng: -1.9114 },
+      accuracy: 0.89,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Oriental',
+        code_wilaya: '60',
+        province_prefecture: 'Préfecture d\'Oujda-Angad',
+        commune: 'Oujda',
+        code_commune: '601101',
+        arrondissement: 'Oujda-Lala Meryem',
+        region_administrative: 'Oriental',
+        code_region: 'OR',
+        code_postal: '60000',
+        secteur_postal: 'Oujda Centre',
+        cin_zone: 'F / FH',
+        circonscription_electorale: 'Oujda-Angad',
+        tribunal_competent: 'Tribunal de Première Instance d\'Oujda',
+        academie_regionale: 'Académie Régionale de l\'Oriental',
+        centre_sante: 'CHU Mohammed VI Oujda',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  kenitra: {
+    input: { address_components: { ville: 'Kénitra', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Kénitra',
+      commune: 'Kénitra',
+      wilaya: 'Rabat-Salé-Kénitra',
+      code_postal: '14000',
+      pays: 'MA',
+      formatted_address: 'Kénitra, 14000, Maroc',
+      location: { lat: 34.261, lng: -6.5802 },
+      accuracy: 0.88,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Rabat-Salé-Kénitra',
+        code_wilaya: '14',
+        province_prefecture: 'Province de Kénitra',
+        commune: 'Kénitra',
+        code_commune: '141101',
+        arrondissement: 'Kénitra-Centre',
+        region_administrative: 'Rabat-Salé-Kénitra',
+        code_region: 'RSK',
+        code_postal: '14000',
+        secteur_postal: 'Kénitra Ville',
+        cin_zone: 'JA / JB',
+        circonscription_electorale: 'Kénitra-Centre',
+        tribunal_competent: 'Tribunal de Première Instance de Kénitra',
+        academie_regionale: 'Académie Régionale Rabat-Salé-Kénitra',
+        centre_sante: 'Hôpital Mohammed V Kénitra',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+
+  sale: {
+    input: { address_components: { ville: 'Salé', pays: 'MA' }, formatted_address: '' },
+    results: [{
+      ville: 'Salé',
+      commune: 'Salé',
+      wilaya: 'Rabat-Salé-Kénitra',
+      code_postal: '11000',
+      pays: 'MA',
+      formatted_address: 'Salé, 11000, Maroc',
+      location: { lat: 34.0383, lng: -6.7986 },
+      accuracy: 0.89,
+      accuracy_type: 'place',
+      source: 'Base nationale des adresses — Direction de la Statistique (HCP)',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: 'Rabat-Salé-Kénitra',
+        code_wilaya: '11',
+        province_prefecture: 'Préfecture de Salé',
+        commune: 'Salé (Bettana)',
+        code_commune: '111101',
+        arrondissement: 'Bettana',
+        region_administrative: 'Rabat-Salé-Kénitra',
+        code_region: 'RSK',
+        code_postal: '11000',
+        secteur_postal: 'Salé Centre',
+        cin_zone: 'S / SH',
+        circonscription_electorale: 'Salé-Centre',
+        tribunal_competent: 'Tribunal de Première Instance de Salé',
+        academie_regionale: 'Académie Régionale Rabat-Salé-Kénitra',
+        centre_sante: 'Hôpital Al Farabi Salé',
+        source: 'HCP / Base Nationale des Adresses',
+      },
+    }],
+  },
+}
+
+// ─── Algorithme de géocodage Maroc ────────────────────────────────────────────
+
+function normalizeMA(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-_]/g, ' ')
+    .trim()
+}
+
+function mockGeocodeMA(address: string): GeocodeResponseMA {
+  const norm = normalizeMA(address)
+
+  // Essai de correspondance exacte ou partielle avec la DB
+  for (const [key, data] of Object.entries(MA_DB)) {
+    if (norm.includes(normalizeMA(key))) {
+      const res = JSON.parse(JSON.stringify(data)) as GeocodeResponseMA
+      res.input.formatted_address = address
+      res.results[0].formatted_address = address || res.results[0].formatted_address
+      return res
+    }
+  }
+
+  // Détection de numéro de rue + rue
+  const streetMatch = norm.match(/^(\d+)[,\s]+(.+)/)
+  const hasStreet = streetMatch !== null
+
+  // Résultat générique Maroc si ville non reconnue
+  // Tenter de détecter une ville dans la chaîne
+  let detectedCity = 'Maroc'
+  let detectedPostal = '00000'
+  let detectedWilaya = 'Inconnue'
+  let detectedLat = 31.7917
+  let detectedLng = -7.0926
+
+  // Mots-clés wilaya
+  if (norm.includes('casablanca') || norm.includes('casa')) { detectedCity = 'Casablanca'; detectedPostal = '20000'; detectedWilaya = 'Casablanca-Settat'; detectedLat = 33.5731; detectedLng = -7.5898 }
+  else if (norm.includes('rabat')) { detectedCity = 'Rabat'; detectedPostal = '10000'; detectedWilaya = 'Rabat-Salé-Kénitra'; detectedLat = 34.0209; detectedLng = -6.8416 }
+  else if (norm.includes('marrakech') || norm.includes('marrakesh')) { detectedCity = 'Marrakech'; detectedPostal = '40000'; detectedWilaya = 'Marrakech-Safi'; detectedLat = 31.6295; detectedLng = -7.9811 }
+  else if (norm.includes('fes') || norm.includes('fez')) { detectedCity = 'Fès'; detectedPostal = '30000'; detectedWilaya = 'Fès-Meknès'; detectedLat = 34.0181; detectedLng = -5.0078 }
+  else if (norm.includes('tanger') || norm.includes('tangier')) { detectedCity = 'Tanger'; detectedPostal = '90000'; detectedWilaya = 'Tanger-Tétouan-Al Hoceïma'; detectedLat = 35.7595; detectedLng = -5.834 }
+  else if (norm.includes('agadir')) { detectedCity = 'Agadir'; detectedPostal = '80000'; detectedWilaya = 'Souss-Massa'; detectedLat = 30.4278; detectedLng = -9.5981 }
+  else if (norm.includes('meknes') || norm.includes('meknas')) { detectedCity = 'Meknès'; detectedPostal = '50000'; detectedWilaya = 'Fès-Meknès'; detectedLat = 33.8935; detectedLng = -5.5473 }
+  else if (norm.includes('oujda')) { detectedCity = 'Oujda'; detectedPostal = '60000'; detectedWilaya = 'Oriental'; detectedLat = 34.6867; detectedLng = -1.9114 }
+  else if (norm.includes('kenitra') || norm.includes('kentra')) { detectedCity = 'Kénitra'; detectedPostal = '14000'; detectedWilaya = 'Rabat-Salé-Kénitra'; detectedLat = 34.261; detectedLng = -6.5802 }
+  else if (norm.includes('sale') || norm.includes('salé')) { detectedCity = 'Salé'; detectedPostal = '11000'; detectedWilaya = 'Rabat-Salé-Kénitra'; detectedLat = 34.0383; detectedLng = -6.7986 }
+  else if (norm.includes('tetouan')) { detectedCity = 'Tétouan'; detectedPostal = '93000'; detectedWilaya = 'Tanger-Tétouan-Al Hoceïma'; detectedLat = 35.5889; detectedLng = -5.3626 }
+  else if (norm.includes('laayoune') || norm.includes('ayoun')) { detectedCity = 'Laâyoune'; detectedPostal = '70000'; detectedWilaya = 'Laâyoune-Sakia El Hamra'; detectedLat = 27.1536; detectedLng = -13.2033 }
+  else if (norm.includes('dakhla')) { detectedCity = 'Dakhla'; detectedPostal = '73000'; detectedWilaya = 'Dakhla-Oued Ed-Dahab'; detectedLat = 23.6848; detectedLng = -15.957 }
+  else if (norm.includes('settat')) { detectedCity = 'Settat'; detectedPostal = '26000'; detectedWilaya = 'Casablanca-Settat'; detectedLat = 33.0014; detectedLng = -7.6197 }
+  else if (norm.includes('beni mellal')) { detectedCity = 'Beni Mellal'; detectedPostal = '23000'; detectedWilaya = 'Béni Mellal-Khénifra'; detectedLat = 32.3372; detectedLng = -6.3498 }
+  else if (norm.includes('nador')) { detectedCity = 'Nador'; detectedPostal = '62000'; detectedWilaya = 'Oriental'; detectedLat = 35.1688; detectedLng = -2.9335 }
+  else if (norm.includes('el jadida') || norm.includes('eljadida')) { detectedCity = 'El Jadida'; detectedPostal = '24000'; detectedWilaya = 'Casablanca-Settat'; detectedLat = 33.2316; detectedLng = -8.5007 }
+  else if (norm.includes('safi')) { detectedCity = 'Safi'; detectedPostal = '46000'; detectedWilaya = 'Marrakech-Safi'; detectedLat = 32.2994; detectedLng = -9.2372 }
+  else if (norm.includes('khouribga')) { detectedCity = 'Khouribga'; detectedPostal = '25000'; detectedWilaya = 'Béni Mellal-Khénifra'; detectedLat = 32.8827; detectedLng = -6.9063 }
+  else if (norm.includes('guelmim')) { detectedCity = 'Guelmim'; detectedPostal = '81000'; detectedWilaya = 'Guelmim-Oued Noun'; detectedLat = 28.9863; detectedLng = -10.0573 }
+  else if (norm.includes('errachidia')) { detectedCity = 'Errachidia'; detectedPostal = '52000'; detectedWilaya = 'Drâa-Tafilalet'; detectedLat = 31.9298; detectedLng = -4.4248 }
+  else if (norm.includes('ouarzazate')) { detectedCity = 'Ouarzazate'; detectedPostal = '45000'; detectedWilaya = 'Drâa-Tafilalet'; detectedLat = 30.9193; detectedLng = -6.8934 }
+
+  const rue = hasStreet ? streetMatch[2] : norm
+
+  return {
+    input: {
+      address_components: {
+        numero: hasStreet ? streetMatch[1] : undefined,
+        rue: hasStreet ? streetMatch[2] : undefined,
+        ville: detectedCity,
+        pays: 'MA',
+      },
+      formatted_address: address,
     },
+    results: [{
+      numero: hasStreet ? streetMatch[1] : undefined,
+      rue: hasStreet ? rue : undefined,
+      ville: detectedCity,
+      wilaya: detectedWilaya,
+      code_postal: detectedPostal,
+      pays: 'MA',
+      formatted_address: address,
+      location: {
+        lat: detectedLat + (Math.random() * 0.008 - 0.004),
+        lng: detectedLng + (Math.random() * 0.008 - 0.004),
+      },
+      accuracy: hasStreet ? 0.82 : 0.75,
+      accuracy_type: hasStreet ? 'range_interpolation' : 'place',
+      source: 'OpenStreetMap Maroc / HCP Base Nationale des Adresses',
+      fields: {
+        timezone: 'Africa/Casablanca (UTC+1)',
+        wilaya: detectedWilaya,
+        code_wilaya: detectedPostal.substring(0, 2),
+        province_prefecture: `Province/Préfecture de ${detectedCity}`,
+        commune: detectedCity,
+        code_commune: `${detectedPostal.substring(0, 2)}1101`,
+        region_administrative: detectedWilaya,
+        code_region: detectedWilaya.substring(0, 3).toUpperCase(),
+        code_postal: detectedPostal,
+        secteur_postal: `${detectedCity} Centre`,
+        cin_zone: 'Vérification requise',
+        source: 'OpenStreetMap / HCP',
+      },
+    }],
   }
-
-  // Detect some cities for variety
-  if (lower.includes('new york') || lower.includes('nyc') || lower.includes('manhattan')) {
-    return {
-      input: { address_components: { city: 'New York', state: 'NY', country: 'US' }, formatted_address: trimmed },
-      results: [{
-        city: 'New York',
-        county: 'New York County',
-        state: 'NY',
-        zip: '10001',
-        country: 'US',
-        formatted_address: trimmed,
-        location: { lat: 40.7128, lng: -74.006 },
-        accuracy: 0.9,
-        accuracy_type: 'place',
-        source: 'TIGER/Line® dataset from the US Census Bureau',
-        fields: {
-          timezone: 'America/New_York',
-          congressional_district: 'NY-12',
-          census_tract: '36061015900.00',
-          county_fips: '36061',
-          state_legislature_upper: 'NY-27',
-          state_legislature_lower: 'NY-65',
-          school_district: 'New York City Geographic District #1',
-          msa: 'New York-Newark-Jersey City, NY-NJ-PA',
-          zip4: '0001',
-        },
-      }],
-    }
-  }
-
-  if (lower.includes('casablanca') || lower.includes('maroc') || lower.includes('morocco') || lower.includes('rabat')) {
-    return {
-      input: { address_components: { city: 'Casablanca', country: 'MA' }, formatted_address: trimmed },
-      results: [{
-        city: 'Casablanca',
-        county: 'Grand Casablanca-Settat',
-        state: 'MA',
-        zip: '20000',
-        country: 'MA',
-        formatted_address: trimmed,
-        location: { lat: 33.5731, lng: -7.5898 },
-        accuracy: 0.88,
-        accuracy_type: 'place',
-        source: 'OpenStreetMap / GeoNames',
-        fields: {
-          timezone: 'Africa/Casablanca',
-          census_tract: '212 01 00',
-          county_fips: 'MA-CAS',
-          msa: 'Grand Casablanca',
-          zip4: 'N/A',
-        },
-      }],
-    }
-  }
-
-  if (lower.includes('los angeles') || lower.includes(' la ') || lower.includes('los angeles')) {
-    return {
-      input: { address_components: { city: 'Los Angeles', state: 'CA', country: 'US' }, formatted_address: trimmed },
-      results: [{
-        city: 'Los Angeles',
-        county: 'Los Angeles County',
-        state: 'CA',
-        zip: '90012',
-        country: 'US',
-        formatted_address: trimmed,
-        location: { lat: 34.0522, lng: -118.2437 },
-        accuracy: 0.95,
-        accuracy_type: 'street_center',
-        source: 'TIGER/Line® dataset from the US Census Bureau',
-        fields: {
-          timezone: 'America/Los_Angeles',
-          congressional_district: 'CA-34',
-          census_tract: '06037207400.00',
-          county_fips: '06037',
-          state_legislature_upper: 'CA-24',
-          state_legislature_lower: 'CA-51',
-          school_district: 'Los Angeles Unified School District',
-          msa: 'Los Angeles-Long Beach-Anaheim, CA',
-          zip4: '0002',
-        },
-      }],
-    }
-  }
-
-  return presets.default
 }
 
 // ─── Accuracy badge ───────────────────────────────────────────────────────────
@@ -216,6 +539,7 @@ function AccuracyBadge({ type, score }: { type: string; score: number }) {
   const colors: Record<string, string> = {
     rooftop: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     street_center: 'bg-blue-100 text-blue-700 border-blue-200',
+    range_interpolation: 'bg-violet-100 text-violet-700 border-violet-200',
     place: 'bg-amber-100 text-amber-700 border-amber-200',
     zip_code: 'bg-orange-100 text-orange-700 border-orange-200',
   }
@@ -264,33 +588,43 @@ function JsonBlock({ data }: { data: object }) {
   )
 }
 
-// ─── Field table ──────────────────────────────────────────────────────────────
+// ─── Append fields table ──────────────────────────────────────────────────────
 
-const FIELD_LABELS: Record<string, string> = {
-  timezone: '🕐 Timezone',
-  congressional_district: '🏛️ Congressional District',
-  census_tract: '📊 Census Tract',
-  county_fips: '🔢 County FIPS',
-  state_legislature_upper: '⬆️ State Legislature (Upper)',
-  state_legislature_lower: '⬇️ State Legislature (Lower)',
-  school_district: '🏫 School District',
-  msa: '🌆 Metro Area (MSA)',
-  zip4: '📮 ZIP+4',
+const FIELD_LABELS_MA: Record<string, string> = {
+  timezone: '🕐 Fuseau horaire',
+  wilaya: '🗺️ Wilaya / Région',
+  code_wilaya: '🔢 Code Wilaya',
+  province_prefecture: '🏛️ Province / Préfecture',
+  commune: '🏘️ Commune',
+  code_commune: '🔢 Code Commune',
+  arrondissement: '📍 Arrondissement',
+  region_administrative: '🌍 Région Administrative',
+  code_region: '🔠 Code Région',
+  code_postal: '📮 Code Postal',
+  secteur_postal: '📬 Secteur Postal',
+  cin_zone: '🪪 Zone CIN',
+  circonscription_electorale: '🗳️ Circonscription Électorale',
+  tribunal_competent: '⚖️ Tribunal Compétent',
+  academie_regionale: '🏫 Académie Régionale',
+  centre_sante: '🏥 Centre de Santé',
 }
 
-function AppendFieldsTable({ fields }: { fields: GeocodeFields }) {
+function AppendFieldsTableMA({ fields }: { fields: GeocodeFieldsMA }) {
   return (
     <div className="rounded-xl border border-slate-200 overflow-hidden">
-      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Append Fields</p>
+      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Champs Append — Maroc 🇲🇦</p>
+        <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+          {Object.values(fields).filter(Boolean).length} champs actifs
+        </span>
       </div>
       <div className="divide-y divide-slate-100">
-        {Object.entries(FIELD_LABELS).map(([key, label]) => {
-          const val = fields[key as keyof GeocodeFields]
+        {Object.entries(FIELD_LABELS_MA).map(([key, label]) => {
+          const val = fields[key as keyof GeocodeFieldsMA]
           return (
             <div key={key} className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50/50 transition-colors">
               <span className="text-sm text-slate-500">{label}</span>
-              <span className={`text-sm font-medium ${val ? 'text-slate-900' : 'text-slate-300 italic'}`}>
+              <span className={`text-sm font-medium text-right max-w-[55%] ${val ? 'text-slate-900' : 'text-slate-300 italic'}`}>
                 {val || '—'}
               </span>
             </div>
@@ -301,34 +635,34 @@ function AppendFieldsTable({ fields }: { fields: GeocodeFields }) {
   )
 }
 
-// ─── Map pin SVG ──────────────────────────────────────────────────────────────
+// ─── Mini map ─────────────────────────────────────────────────────────────────
 
-function MiniMap({ lat, lng }: { lat: number; lng: number }) {
+function MiniMapMA({ lat, lng, city }: { lat: number; lng: number; city?: string }) {
   return (
-    <div className="relative w-full h-40 bg-gradient-to-br from-blue-50 to-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center">
-      {/* Grid lines */}
-      <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#94a3b8" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-      </svg>
-      {/* Crosshair */}
+    <div className="relative w-full h-44 bg-gradient-to-br from-red-50 via-green-50 to-red-50 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center">
+      {/* Maroc flag colors subtle bg */}
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: 'linear-gradient(rgba(200,16,46,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,98,51,0.4) 1px, transparent 1px)',
+        backgroundSize: '28px 28px'
+      }} />
       <div className="relative flex flex-col items-center">
-        <div className="w-10 h-10 rounded-full bg-blue-600/20 border-2 border-blue-500 flex items-center justify-center animate-pulse">
-          <div className="w-3 h-3 rounded-full bg-blue-600" />
+        <div className="w-12 h-12 rounded-full bg-red-600/20 border-2 border-red-500 flex items-center justify-center animate-pulse">
+          <div className="w-4 h-4 rounded-full bg-red-600" />
         </div>
-        <div className="mt-2 px-3 py-1 rounded-lg bg-white/90 border border-slate-200 shadow-sm text-xs font-mono text-slate-700">
-          {lat.toFixed(4)}, {lng.toFixed(4)}
+        {city && (
+          <div className="mt-1 px-3 py-0.5 rounded-lg bg-white/90 border border-slate-200 shadow-sm text-xs font-bold text-red-700">
+            🇲🇦 {city}
+          </div>
+        )}
+        <div className="mt-1 px-3 py-1 rounded-lg bg-white/90 border border-slate-200 shadow-sm text-xs font-mono text-slate-700">
+          {lat.toFixed(5)}, {lng.toFixed(5)}
         </div>
       </div>
     </div>
   )
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
 
 interface GeocodeDemoProps {
   compact?: boolean
@@ -338,34 +672,37 @@ interface GeocodeDemoProps {
 export default function GeocodeDemo({ compact = false, defaultAddress = '' }: GeocodeDemoProps) {
   const [address, setAddress] = useState(defaultAddress)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<GeocodeResponse | null>(null)
+  const [result, setResult] = useState<GeocodeResponseMA | null>(null)
   const [showJson, setShowJson] = useState(false)
   const [showFields, setShowFields] = useState(true)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const suggestions = [
-    '1600 Pennsylvania Ave NW, Washington DC',
-    '525 University Ave, Toronto, ON',
     'Casablanca, Maroc',
-    '350 5th Ave, New York, NY 10118',
-    '1 Infinite Loop, Cupertino, CA',
+    'Rabat, Avenue Hassan II',
+    'Marrakech, Médina',
+    'Fès, Bab Bou Jeloud',
+    'Tanger, Boulevard Mohammed VI',
+    'Agadir, Secteur Talborjt',
+    'Meknès, Maroc',
+    'Oujda, Maroc',
   ]
 
   const handleGeocode = async (addr?: string) => {
     const query = addr ?? address
     if (!query.trim()) {
-      setError('Veuillez entrer une adresse.')
+      setError('Veuillez entrer une adresse marocaine.')
       return
     }
     setError('')
     setLoading(true)
     setResult(null)
 
-    // Simulate API latency
-    await new Promise((r) => setTimeout(r, 600 + Math.random() * 400))
+    // Simulation latence API réaliste
+    await new Promise((r) => setTimeout(r, 500 + Math.random() * 500))
 
-    const res = mockGeocode(query)
+    const res = mockGeocodeMA(query)
     setResult(res)
     setLoading(false)
   }
@@ -374,17 +711,17 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
 
   return (
     <div className={`w-full ${compact ? '' : 'max-w-3xl mx-auto'}`}>
-      {/* ── Search bar ── */}
+      {/* ── Barre de recherche ── */}
       <div className="flex gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-400 transition-all shadow-sm">
-          <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+        <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-red-400 focus-within:border-red-400 transition-all shadow-sm">
+          <MapPin className="h-4 w-4 text-red-500 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleGeocode()}
-            placeholder="Entrez une adresse, ville ou code postal..."
+            placeholder="Entrez une adresse marocaine, ville ou code postal..."
             className="flex-1 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent focus:outline-none"
           />
           {address && (
@@ -399,14 +736,14 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
         <button
           onClick={() => handleGeocode()}
           disabled={loading}
-          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+          className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          {loading ? 'Géocodage...' : 'Geocoder'}
+          {loading ? 'Géocodage...' : 'Geocoder 🇲🇦'}
         </button>
       </div>
 
-      {/* ── Error ── */}
+      {/* ── Erreur ── */}
       {error && (
         <div className="mt-3 flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2.5">
           <AlertCircle className="h-4 w-4 shrink-0" />
@@ -417,13 +754,13 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
       {/* ── Suggestions ── */}
       {!result && !loading && (
         <div className="mt-4">
-          <p className="text-xs text-slate-400 mb-2 font-medium">Essayez une adresse :</p>
+          <p className="text-xs text-slate-400 mb-2 font-medium">🇲🇦 Essayez une adresse marocaine :</p>
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
               <button
                 key={s}
                 onClick={() => { setAddress(s); handleGeocode(s) }}
-                className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 hover:text-red-700 text-slate-600 transition-colors"
               >
                 {s}
               </button>
@@ -432,58 +769,62 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
         </div>
       )}
 
-      {/* ── Loading skeleton ── */}
+      {/* ── Skeleton ── */}
       {loading && (
         <div className="mt-6 space-y-4 animate-pulse">
           <div className="h-10 bg-slate-100 rounded-xl w-2/3" />
-          <div className="h-40 bg-slate-100 rounded-xl" />
-          <div className="h-64 bg-slate-100 rounded-xl" />
+          <div className="h-44 bg-slate-100 rounded-xl" />
+          <div className="h-72 bg-slate-100 rounded-xl" />
         </div>
       )}
 
-      {/* ── Results ── */}
+      {/* ── Résultats ── */}
       {result && firstResult && !loading && (
         <div className="mt-6 space-y-4">
-          {/* Address header */}
+          {/* En-tête adresse */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
+                <MapPin className="h-4 w-4 text-red-600 shrink-0" />
                 <p className="text-sm font-bold text-slate-900">{firstResult.formatted_address}</p>
               </div>
               <div className="flex items-center gap-2 ml-6 flex-wrap">
                 <AccuracyBadge type={firstResult.accuracy_type} score={firstResult.accuracy} />
-                <span className="text-xs text-slate-400">Source : {firstResult.source.split('/')[0]}</span>
+                <span className="text-xs text-slate-400">Source : {firstResult.source.split('/')[0].trim()}</span>
               </div>
             </div>
-            <div className="text-xs font-mono text-slate-500 whitespace-nowrap bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg">
+            <div className="text-xs font-mono text-slate-500 whitespace-nowrap bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg shrink-0">
               {firstResult.location.lat.toFixed(6)}, {firstResult.location.lng.toFixed(6)}
             </div>
           </div>
 
-          {/* Components grid */}
+          {/* Composants d'adresse */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { label: 'Numéro', value: firstResult.number },
-              { label: 'Rue', value: firstResult.street },
-              { label: 'Ville', value: firstResult.city },
-              { label: 'Comté', value: firstResult.county },
-              { label: 'État', value: firstResult.state },
-              { label: 'Code Postal', value: firstResult.zip },
-            ].map(({ label, value }) => (
+              { label: 'N° de rue', value: firstResult.numero },
+              { label: 'Rue / Quartier', value: firstResult.rue },
+              { label: 'Ville', value: firstResult.ville },
+              { label: 'Commune', value: firstResult.commune },
+              { label: 'Wilaya', value: firstResult.wilaya },
+              { label: 'Code Postal', value: firstResult.code_postal },
+            ].map(({ label, value }) =>
               value ? (
                 <div key={label} className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-100">
                   <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-0.5">{label}</p>
                   <p className="text-sm font-medium text-slate-800">{value}</p>
                 </div>
               ) : null
-            ))}
+            )}
           </div>
 
-          {/* Mini map */}
-          <MiniMap lat={firstResult.location.lat} lng={firstResult.location.lng} />
+          {/* Mini carte Maroc */}
+          <MiniMapMA
+            lat={firstResult.location.lat}
+            lng={firstResult.location.lng}
+            city={firstResult.ville}
+          />
 
-          {/* Append fields */}
+          {/* Append fields Maroc */}
           {firstResult.fields && (
             <div>
               <button
@@ -491,16 +832,16 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
                 className="flex items-center gap-2 w-full text-sm font-semibold text-slate-700 mb-3"
               >
                 {showFields ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                Append Fields
-                <span className="text-xs font-normal text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full ml-auto">
-                  {Object.keys(firstResult.fields).length} champs
+                Champs Append Maroc
+                <span className="text-xs font-normal text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full ml-auto">
+                  {Object.values(firstResult.fields).filter(v => v && v !== 'Vérification requise').length} champs 🇲🇦
                 </span>
               </button>
-              {showFields && <AppendFieldsTable fields={firstResult.fields} />}
+              {showFields && <AppendFieldsTableMA fields={firstResult.fields} />}
             </div>
           )}
 
-          {/* JSON toggle */}
+          {/* JSON brut */}
           <div>
             <button
               onClick={() => setShowJson(!showJson)}
@@ -516,14 +857,6 @@ export default function GeocodeDemo({ compact = false, defaultAddress = '' }: Ge
               </div>
             )}
           </div>
-
-          {/* Multiple results note */}
-          {result.results.length > 1 && (
-            <div className="flex items-center gap-2 text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              {result.results.length} résultats trouvés — affichage du plus précis.
-            </div>
-          )}
         </div>
       )}
     </div>
