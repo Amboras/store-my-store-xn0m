@@ -41,7 +41,7 @@ const features = [
   {
     icon: <Zap className="h-6 w-6 text-blue-500" />,
     title: 'Geocoding ultra-rapide',
-    desc: "Convertissez des adresses en coordonnées GPS en quelques millisecondes. Batch jusqu'à 10 000 adresses en une seule requête.",
+    desc: "Convertissez des adresses en coordonnées GPS en quelques millisecondes. Batch jusqu\u2019\u00e0 10 000 adresses en une seule requ\u00eate.",
   },
   {
     icon: <Database className="h-6 w-6 text-violet-500" />,
