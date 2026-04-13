@@ -1,68 +1,54 @@
 'use client'
 
 import Link from 'next/link'
+import { MapPin } from 'lucide-react'
 import { clearConsent } from '@/lib/cookie-consent'
 import { usePolicies } from '@/hooks/use-policies'
-
-const footerLinks = {
-  shop: [
-    { label: 'All Products', href: '/products' },
-    { label: 'New Arrivals', href: '/products?sort=newest' },
-    { label: 'Collections', href: '/collections' },
-  ],
-  help: [
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Shipping & Returns', href: '/shipping' },
-    { label: 'Contact Us', href: '/contact' },
-  ],
-}
 
 export default function Footer() {
   const { policies } = usePolicies()
 
-  // Build company links dynamically based on available policies
-  const companyLinks = [
+  const legalLinks = [
     { label: 'About', href: '/about' },
+    ...(policies?.privacy_policy ? [{ label: 'Privacy Policy', href: '/privacy' }] : []),
+    ...(policies?.terms_of_service ? [{ label: 'Terms of Service', href: '/terms' }] : []),
+    ...(policies?.refund_policy ? [{ label: 'Refund Policy', href: '/refund-policy' }] : []),
   ]
 
-  // Add policy links only if they're set in the admin
-  if (policies?.privacy_policy) {
-    companyLinks.push({ label: 'Privacy Policy', href: '/privacy' })
-  }
-  if (policies?.terms_of_service) {
-    companyLinks.push({ label: 'Terms of Service', href: '/terms' })
-  }
-  if (policies?.refund_policy) {
-    companyLinks.push({ label: 'Refund Policy', href: '/refund-policy' })
-  }
-  if (policies?.cookie_policy) {
-    companyLinks.push({ label: 'Cookie Policy', href: '/cookie-policy' })
-  }
-
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container-custom py-section-sm">
-        {/* Main Footer */}
+    <footer className="bg-slate-950 text-slate-400 border-t border-slate-800">
+      <div className="container-custom py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="inline-block">
-              <span className="font-heading text-2xl font-semibold">
-                Store
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600">
+                <MapPin className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="font-heading text-xl font-bold text-white">
+                Geo<span className="text-blue-400">Data</span>
               </span>
             </Link>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Curated products crafted with care. Quality you can feel, design you can see.
+            <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
+              API de géocodage et d&apos;enrichissement d&apos;adresses. Précise, rapide et fiable.
             </p>
+            <div className="mt-4 text-xs text-slate-600">
+              🇲🇦 Conçu pour le Maroc & le monde
+            </div>
           </div>
 
-          {/* Shop Links */}
+          {/* Product */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Shop</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300 mb-4">Produit</h3>
             <ul className="space-y-3">
-              {footerLinks.shop.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {[
+                { label: 'Géocodage', href: '/products' },
+                { label: 'Reverse Geocoding', href: '/products' },
+                { label: 'Batch API', href: '/products' },
+                { label: 'Tarifs', href: '/products' },
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -70,13 +56,18 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Help Links */}
+          {/* Developers */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Help</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300 mb-4">Développeurs</h3>
             <ul className="space-y-3">
-              {footerLinks.help.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {[
+                { label: 'Documentation API', href: '/faq' },
+                { label: 'Quick Start', href: '/faq' },
+                { label: 'Exemples de code', href: '/faq' },
+                { label: 'Statut API', href: '/faq' },
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -84,13 +75,17 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company Links */}
+          {/* Company */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Company</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300 mb-4">Entreprise</h3>
             <ul className="space-y-3">
-              {companyLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {[
+                ...legalLinks,
+                { label: 'Contact', href: '/contact' },
+                { label: 'FAQ', href: '/faq' },
+              ].map((link) => (
+                <li key={link.href + link.label}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -99,10 +94,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Store. All rights reserved.
+        {/* Bottom bar */}
+        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-600">
+            &copy; {new Date().getFullYear()} GeoData API. Tous droits réservés.
           </p>
           <div className="flex items-center gap-6">
             <button
@@ -110,11 +105,11 @@ export default function Footer() {
                 clearConsent()
                 window.dispatchEvent(new Event('manage-cookies'))
               }}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs text-slate-600 hover:text-slate-300 transition-colors"
             >
-              Manage Cookies
+              Gérer les cookies
             </button>
-            <span className="text-xs text-muted-foreground">Powered by Amboras</span>
+            <span className="text-xs text-slate-700">Propulsé par Amboras</span>
           </div>
         </div>
       </div>

@@ -2,22 +2,17 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Search, ShoppingBag, User, Menu, X, LogIn } from 'lucide-react'
-import { useCart } from '@/hooks/use-cart'
+import { Menu, X, MapPin, LogIn, User, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
-import CartDrawer from '@/components/cart/cart-drawer'
-import { useCollections } from '@/hooks/use-collections'
 
 export default function Header() {
-  const { itemCount } = useCart()
   const { isLoggedIn } = useAuth()
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const { data: collections } = useCollections()
-
+  const [isDocsOpen, setIsDocsOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const mobileMenuCloseRef = useRef<HTMLButtonElement>(null)
+  const docsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -25,14 +20,10 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Focus close button when mobile menu opens
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      mobileMenuCloseRef.current?.focus()
-    }
+    if (isMobileMenuOpen) mobileMenuCloseRef.current?.focus()
   }, [isMobileMenuOpen])
 
-  // Close mobile menu on Escape
   useEffect(() => {
     if (!isMobileMenuOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -42,7 +33,17 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isMobileMenuOpen])
 
-  // Focus trap for mobile menu
+  // Close docs dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (docsRef.current && !docsRef.current.contains(e.target as Node)) {
+        setIsDocsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const handleMobileMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key !== 'Tab' || !mobileMenuRef.current) return
     const focusable = mobileMenuRef.current.querySelectorAll<HTMLElement>(
@@ -65,8 +66,8 @@ export default function Header() {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-background/95 backdrop-blur-md border-b shadow-sm'
-            : 'bg-background border-b'
+            ? 'bg-white/95 backdrop-blur-md border-b shadow-sm'
+            : 'bg-white border-b border-slate-100'
         }`}
       >
         <div className="container-custom">
@@ -81,57 +82,80 @@ export default function Header() {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-heading text-2xl font-semibold tracking-tight">
-                Store
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600">
+                <MapPin className="h-4 w-4 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="font-heading text-xl font-bold tracking-tight text-slate-900">
+                Geo<span className="text-blue-600">Data</span>
               </span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
-              <Link href="/products" className="text-sm tracking-wide uppercase link-underline py-1" prefetch={true}>
-                Shop All
+            <nav className="hidden lg:flex items-center gap-6">
+              <Link href="/products" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                Pricing
               </Link>
-              {collections?.slice(0, 4).map((collection: any) => (
-                <Link
-                  key={collection.id}
-                  href={`/collections/${collection.handle}`}
-                  className="text-sm tracking-wide uppercase link-underline py-1"
-                  prefetch={true}
+
+              {/* Docs Dropdown */}
+              <div className="relative" ref={docsRef}>
+                <button
+                  onClick={() => setIsDocsOpen(!isDocsOpen)}
+                  className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
                 >
-                  {collection.title}
-                </Link>
-              ))}
+                  Docs
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isDocsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isDocsOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-xl border border-slate-100 shadow-lg py-2 z-50">
+                    <Link href="/faq" className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <span className="text-lg">📖</span>
+                      <div>
+                        <p className="font-medium">API Reference</p>
+                        <p className="text-xs text-slate-400">Endpoints & examples</p>
+                      </div>
+                    </Link>
+                    <Link href="/faq" className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <span className="text-lg">🚀</span>
+                      <div>
+                        <p className="font-medium">Quick Start</p>
+                        <p className="text-xs text-slate-400">Get started in minutes</p>
+                      </div>
+                    </Link>
+                    <Link href="/faq" className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <span className="text-lg">💡</span>
+                      <div>
+                        <p className="font-medium">Use Cases</p>
+                        <p className="text-xs text-slate-400">What you can build</p>
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link href="/about" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                About
+              </Link>
+              <Link href="/contact" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                Contact
+              </Link>
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-1">
-              <Link
-                href="/search"
-                className="p-2.5 hover:opacity-70 transition-opacity"
-                aria-label="Search"
-              >
-                <Search className="h-5 w-5" />
-              </Link>
+            <div className="flex items-center gap-2">
               <Link
                 href={isLoggedIn ? '/account' : '/auth/login'}
-                className="p-2.5 hover:opacity-70 transition-opacity hidden sm:block"
-                aria-label={isLoggedIn ? 'Account' : 'Sign in'}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
               >
-                {isLoggedIn ? <User className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+                {isLoggedIn ? <User className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                {isLoggedIn ? 'Dashboard' : 'Sign In'}
               </Link>
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 hover:opacity-70 transition-opacity"
-                aria-label="Shopping bag"
+              <Link
+                href="/products"
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
               >
-                <ShoppingBag className="h-5 w-5" />
-                {itemCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background">
-                    {itemCount}
-                  </span>
-                )}
-              </button>
+                Get API Key
+              </Link>
             </div>
           </div>
         </div>
@@ -150,10 +174,15 @@ export default function Header() {
             aria-modal="true"
             aria-label="Navigation menu"
             onKeyDown={handleMobileMenuKeyDown}
-            className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-background animate-slide-in-right"
+            className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-white animate-slide-in-right"
           >
             <div className="flex items-center justify-between p-4 border-b">
-              <span className="font-heading text-xl font-semibold">Menu</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600">
+                  <MapPin className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                </div>
+                <span className="font-bold text-slate-900">GeoData</span>
+              </div>
               <button
                 ref={mobileMenuCloseRef}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -164,48 +193,38 @@ export default function Header() {
               </button>
             </div>
             <nav className="p-4 space-y-1">
-              <Link
-                href="/products"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-3 text-lg tracking-wide border-b border-border/50"
-                prefetch={true}
-              >
-                Shop All
+              <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-lg font-medium border-b border-slate-100 text-slate-700">
+                Pricing
               </Link>
-              {collections?.map((collection: any) => (
-                <Link
-                  key={collection.id}
-                  href={`/collections/${collection.handle}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-lg tracking-wide border-b border-border/50"
-                  prefetch={true}
-                >
-                  {collection.title}
-                </Link>
-              ))}
-              <div className="pt-4 space-y-1">
+              <Link href="/faq" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-lg font-medium border-b border-slate-100 text-slate-700">
+                API Docs
+              </Link>
+              <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-lg font-medium border-b border-slate-100 text-slate-700">
+                About
+              </Link>
+              <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-lg font-medium border-b border-slate-100 text-slate-700">
+                Contact
+              </Link>
+              <div className="pt-4 space-y-3">
                 <Link
                   href={isLoggedIn ? '/account' : '/auth/login'}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-muted-foreground"
+                  className="block py-2 text-slate-500"
                 >
-                  {isLoggedIn ? 'Account' : 'Sign In'}
+                  {isLoggedIn ? 'Dashboard' : 'Sign In'}
                 </Link>
                 <Link
-                  href="/search"
+                  href="/products"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-muted-foreground"
+                  className="block text-center py-3 bg-blue-600 text-white font-semibold rounded-lg"
                 >
-                  Search
+                  Get API Key
                 </Link>
               </div>
             </nav>
           </div>
         </div>
       )}
-
-      {/* Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   )
 }
